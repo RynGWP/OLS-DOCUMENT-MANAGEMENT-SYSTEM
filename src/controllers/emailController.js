@@ -43,7 +43,7 @@ class EmailController {
             });
  
             const mailOptions = {
-                from: `"DATUPAGLAS" <${process.env.SENDER_EMAIL}>`,
+                from: `"OFFICE OF LEGAL SERVICES" <${process.env.SENDER_EMAIL}>`,
                 to,
                 subject,
                 text,
@@ -61,20 +61,18 @@ class EmailController {
         }
     }
 
-    async updateEmailNotificationStatus(taxpayerId, dueDate) {
+    async updateEmailNotificationStatus(docId) {
         try {
             const query = `
-                UPDATE invoice 
-                SET email_notification_status = 'sent' 
-                WHERE taxpayer_id = $1 
-                AND due_date = $2 
+                UPDATE received_documents 
+                SET sms_status = 'sent' 
+                WHERE id = $1 
                 AND status = 'pending'
-                AND email_notification_status = 'pending'
                 RETURNING *
             `;
             
-            const { rowCount } = await db.query(query, [taxpayerId, dueDate]);
-            console.log(`Updated email notification status for taxpayer ${taxpayerId}. Rows affected: ${rowCount}`);
+            const { rowCount } = await db.query(query, [docId]);
+            console.log(`Updated email notification status for Document ${docId}. Rows affected: ${rowCount}`);
             return rowCount > 0;
         } catch (error) {
             console.error('Error updating email notification status:', error);

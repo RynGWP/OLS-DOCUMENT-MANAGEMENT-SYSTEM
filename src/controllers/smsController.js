@@ -39,31 +39,26 @@ class SMSController {
         }
     }
 
-    async getDueDate() {
-        const dueDate = new Date();
-        dueDate.setDate(dueDate.getDate() + 345);
-        const formattedDate = dueDate.toISOString().split('T')[0];
-
+    async getReadyDocuments() {
         try {
             const query = `
-                SELECT DISTINCT ON (t.taxpayer_id)
-                    t.taxpayer_id,
-                    t.firstname,
-                    t.lastname,              
-                    t.phone, 
-                    i.due_date,
-                    SUM(i.total_tax_amount) AS total_tax_amount,
-                    COUNT(i.total_tax_amount) AS property_count
-                FROM taxpayers t
-                JOIN invoice i ON t.taxpayer_id = i.taxpayer_id
-                WHERE i.due_date = $1
-                AND t.phone IS NOT NULL
-                AND i.status = 'pending'
-               GROUP BY 
-                    t.taxpayer_id, t.firstname, t.lastname, t.phone, i.due_date
+                SELECT 
+                    id,
+                    requestioner,
+                    description,
+                    status,
+                    date_submitted,
+                    created_at,
+                    sms_status,
+                    contact_no
+                FROM received_documents
+                WHERE status = 'Ready to Release'
+                AND sms_status = 'pending'
+                AND contact_no IS NOT NULL
             `;
-            console.log('Querying for due_date on:', formattedDate);
-            const { rows } = await db.query(query, [formattedDate]);
+            
+            console.log('Querying for documents ready to release');
+            const { rows } = await db.query(query);
             return rows;
         } catch (error) {
             console.error('Database Error:', error);
@@ -71,99 +66,107 @@ class SMSController {
         }
     }
 
+    async updateSmsStatus(documentId, status) {
+        try {
+            const query = `
+                UPDATE received_documents
+                SET sms_status = $1
+                WHERE id = $2
+            `;
+            
+            await db.query(query, [status, documentId]);
+            console.log(`Updated SMS status for document ${documentId} to ${status}`);
+            return true;
+        } catch (error) {
+            console.error(`Error updating SMS status for document ${documentId}:`, error);
+            return false;
+        }
+    }
 
-// # ┌────────────── second (optional)
-// # │ ┌──────────── minute
-// # │ │ ┌────────── hour
-// # │ │ │ ┌──────── day of month
-// # │ │ │ │ ┌────── month
-// # │ │ │ │ │ ┌──── day of week
-// # │ │ │ │ │ │
-// # │ │ │ │ │ │
-// # * * * * * *
-
-    // field	value
-    
-    // second	0-59
-    // minute	0-59
-    // hour  	0-23
-    // day of month	1-31
-    // month	1-12 (or names)
-    // day of week	0-7 (or names, 0 or 7 are sunday)
+    // # ┌────────────── second (optional)
+    // # │ ┌──────────── minute
+    // # │ │ ┌────────── hour
+    // # │ │ │ ┌──────── day of month
+    // # │ │ │ │ ┌────── month
+    // # │ │ │ │ │ ┌──── day of week
+    // # │ │ │ │ │ │
+    // # │ │ │ │ │ │
+    // # * * * * * *
 
     initializeReminders() {
-        
-        nodecron.schedule('* * 0 * * *', async () => {
-            console.log('Starting daily reminder check:', new Date().toISOString());
-            await this.processReminders();
+        // Run every hour
+        nodecron.schedule('*/3 * * * *', async () => {
+            console.log('Starting document notification check:', new Date().toISOString());
+            await this.processDocumentNotifications();
         });
     }
 
-    async processReminders() {
+    // Helper function to generate message based on description
+    generateMessage(requestioner, description) {
+        const hasMultipleDocuments = /([,&]|and)/.test(description);
+        
+        if (hasMultipleDocuments) {
+            return `Hi ${requestioner}, this is from the Office of Legal Services. Your (${description}) are now ready for pickup.`;
+        } else {
+            return `Hi ${requestioner}, this is from the Office of Legal Services. Your (${description}) is now ready for pickup.`;
+        }
+    }
+
+    async processDocumentNotifications() {
         try {
-            const dueDates = await this.getDueDate();
+            const readyDocuments = await this.getReadyDocuments();
     
-            if (dueDates.length === 0) {
-                console.log('No Due date found for next week');
+            if (readyDocuments.length === 0) {
+                console.log('No documents ready for release notification');
                 return;
             }
     
-            for (const dueDate of dueDates) {
+            for (const document of readyDocuments) {
                 try {
                     const { 
-                        taxpayer_id,
-                        firstname,
-                        lastname,
-                        phone,
-                        due_date,
-                        total_tax_amount,
-                        property_count
-                    } = dueDate;
+                        id,
+                        requestioner,
+                        description,
+                        contact_no
+                    } = document;
     
-                    // Create a unique key using taxpayer_id
-                    const messageKey = `${taxpayer_id}-${due_date}`;
+                    // Create a unique key using document id
+                    const messageKey = `document-${id}`;
     
-                    // Check if we've already sent a message to this taxpayer today
+                    // Check if we've already sent a message for this document today
                     if (this.dailySentMessages.has(messageKey)) {
-                        console.log(`Message already sent today to taxpayer ${taxpayer_id}`);
+                        console.log(`Message already sent today for document ${id}`);
                         continue;
                     }
-    
-                    const formattedAmount = new Intl.NumberFormat('en-PH', {
-                        style: 'currency',
-                        currency: 'PHP'
-                    }).format(total_tax_amount);
+                    
+                    // Generate the message using the helper function
+                    const message = this.generateMessage(requestioner, description);
 
-                    const formattedDate = new Date(due_date).toLocaleDateString('en-US', {
-                        weekday: 'long',
-                        year: 'numeric',
-                        month: 'long',
-                        day: 'numeric'
-                    });
-    
-                    const message = `Hi ${firstname} ${lastname}, we would like to inform you that your tax due date is on ${formattedDate}. The total tax amount for your ${property_count} property/properties is ${formattedAmount}. Please ensure that your payment is made on or before the due date to avoid any penalties.
-                
-                     Thank you`;
-
-                    const smsResult = await this.sendSMS(phone, message);
+                    const smsResult = await this.sendSMS(contact_no, message);
     
                     if (smsResult.success) {
                         // Add to the set of sent messages only if the SMS was sent successfully
                         this.dailySentMessages.add(messageKey);
-                        console.log(`Successfully sent message to taxpayer ${taxpayer_id}`);
+                        
+                        // Update the SMS status in the database
+                        await this.updateSmsStatus(id, 'sent');
+                        
+                        console.log(`Successfully sent notification for document ${id} to ${requestioner}`);
                     } else {
-                        console.error(`Failed to send SMS to ${phone}:`, smsResult.error);
+                        console.error(`Failed to send SMS for document ${id} to ${contact_no}:`, smsResult.error);
+                        // Mark as failed in the database
+                        await this.updateSmsStatus(id, 'failed');
                     }
     
                     // Add delay between messages to avoid rate limiting
                     await new Promise(resolve => setTimeout(resolve, 1000));
     
                 } catch (error) {
-                    console.error('Error processing individual reminder:', error);
+                    console.error('Error processing individual document notification:', error);
                 }
             }
         } catch (error) {
-            console.error('Error in processReminders:', error);
+            console.error('Error in processDocumentNotifications:', error);
         }
     }
 
@@ -174,6 +177,3 @@ class SMSController {
 
 const smsController = new SMSController();
 export default smsController;
-
-
-

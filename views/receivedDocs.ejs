@@ -1,0 +1,842 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Received Documents</title>
+
+  <!-- Google Font: Source Sans Pro -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
+  <!-- DataTables -->
+  <link rel="stylesheet" href="/plugins/datatables-bs4/css/dataTables.bootstrap4.min.css">
+  <link rel="stylesheet" href="/plugins/datatables-responsive/css/responsive.bootstrap4.min.css">
+  <link rel="stylesheet" href="/plugins/datatables-buttons/css/buttons.bootstrap4.min.css">
+  <!-- Theme style -->
+  <link rel="stylesheet" href="/dist/css/adminlte.min.css">
+  <!-- SweetAlert2 -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+  <!-- Toastr -->
+  <link rel="stylesheet" href="/plugins/toastr/toastr.min.css">
+  <!-- BS Stepper -->
+  <link rel="stylesheet" href="/plugins/bs-stepper/css/bs-stepper.min.css">
+   <!-- daterange picker -->
+   <link rel="stylesheet" href="/plugins/daterangepicker/daterangepicker.css">
+     <!-- Tempusdominus Bootstrap 4 -->
+  <link rel="stylesheet" href="/plugins/tempusdominus-bootstrap-4/css/tempusdominus-bootstrap-4.min.css">
+<!-- Header styles -->
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.1/css/all.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+  <link rel="stylesheet" href="style2.css">
+<style>
+
+  .btn-primary.next, .btn-secondary.previous, .btn-success.finish {
+    width: 100px;
+    margin:5px;
+  }
+
+
+
+
+
+@keyframes animation {
+  from,50% {
+    color:rgb(255, 255, 255);
+  }
+  to {
+    color:rgb(154, 233, 255);
+  }
+}
+
+
+
+.nav-icon {
+  color:rgb(184, 185, 190);
+}
+
+p {
+  color:rgb(184, 185, 190);
+}
+
+
+.text-red{
+  font-weight: 600;
+  color:red !important;
+  font-size: 0.7rem;
+}
+
+
+
+.nav-link.active{
+  background-color: rgba(127, 127, 189, 0.338) !important;
+}
+
+
+.brand-link{
+  border-bottom: none !important;
+}
+
+td{
+  color:rgba(0, 0, 0, 0.596) !important;
+}
+
+th{
+  font-weight: 400 !important ;
+  color:black; 
+}
+
+
+</style>
+
+</head>
+<body class="hold-transition sidebar-mini layout-fixed">
+
+     <!-- preloader -->
+     <%- include('./partials/preloader.ejs') %>
+
+  <div class="wrapper">
+  
+  
+    <!-- Navbar -->
+    <nav class="main-header navbar navbar-expand  navbar-light" >
+      <!-- Left navbar links -->
+      <ul class="navbar-nav">
+        <li class="nav-item">
+          <a class="nav-link text-light" data-widget="pushmenu" href="#" role="button"><i class="fas fa-bars"></i></a>
+        </li>
+        <!-- <li class="nav-item d-none d-sm-inline-block">
+          <a href="index3.html" class="nav-link text-light">Home</a>
+        </li>
+        <li class="nav-item d-none d-sm-inline-block">
+          <a href="#" class="nav-link">Contact</a>
+        </li> -->
+      </ul>
+  
+      <!-- Right navbar links -->
+      <ul class="navbar-nav ml-auto">
+        <!-- Navbar Search -->
+        <!-- <button type="button" class="btn dropdown-toggle dropdown-icon text-light" data-toggle="dropdown" aria-expanded="false">
+         Assessor <i class="fas fa-user"></i>
+        </button> -->
+
+
+        <%- include('./partials/profile.ejs') %>
+
+         
+      </ul>
+    </nav>
+    <!-- /.navbar -->
+  
+    <!-- Main Sidebar Container -->
+    <aside class="main-sidebar sidebar-dark-primary elevation-4">
+      <!-- Brand Logo -->
+      <a href="index3.html" class="brand-link">
+        <img src="/images/olsLogo.jpg" alt="AdminLTE Logo" class="brand-image img-circle " style="opacity: .8">
+        <small class="brand-text font-weight-bold text-light" style="font-weight: 500 !important;">Office of Legal Services</small> 
+      </a> 
+  
+      <!-- Sidebar -->
+      <div class="sidebar" 
+      ">
+        <!-- Sidebar user panel (optional) -->
+     
+  
+  
+
+        <!-- Sidebar Menu -->
+        <nav class="mt-2">
+          <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu" data-accordion="false">
+            <!-- Add icons to the links using the .nav-icon class
+                 with font-awesome or any other icon font library -->
+                 <li class="nav-item " >
+                  <a href="dashboard" class="nav-link ">
+                   
+                   <i class="nav-icon"> <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class=" bi bi-house" viewBox="0 0 16 16">
+                    <path d="M8.707 1.5a1 1 0 0 0-1.414 0L.646 8.146a.5.5 0 0 0 .708.708L2 8.207V13.5A1.5 1.5 0 0 0 3.5 15h9a1.5 1.5 0 0 0 1.5-1.5V8.207l.646.647a.5.5 0 0 0 .708-.708L13 5.793V2.5a.5.5 0 0 0-.5-.5h-1a.5.5 0 0 0-.5.5v1.293zM13 7.207V13.5a.5.5 0 0 1-.5.5h-9a.5.5 0 0 1-.5-.5V7.207l5-5z"/>
+                  </svg></i>
+                    <p>
+                      Dashboard   
+                    </p>
+                  </a>
+                 </li>
+        
+                <li class="nav-item">
+                  <a href="/receivedDocs" class="nav-link active">
+                  
+                   <i class="nav-icon"> <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-file-earmark-text" viewBox="0 0 16 16">
+                    <path d="M5.5 7a.5.5 0 0 0 0 1h5a.5.5 0 0 0 0-1zM5 9.5a.5.5 0 0 1 .5-.5h5a.5.5 0 0 1 0 1h-5a.5.5 0 0 1-.5-.5m0 2a.5.5 0 0 1 .5-.5h2a.5.5 0 0 1 0 1h-2a.5.5 0 0 1-.5-.5"/>
+                    <path d="M9.5 0H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V4.5zm0 1v2A1.5 1.5 0 0 0 11 4.5h2V14a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1z"/>
+                  </svg></i>
+
+                    <% if (locals.receivedDocsToday) { %>
+                    <p>
+                      Received Docs
+                    </p> <span class="badge badge-success mx-2"><%= receivedDocsToday.length %></span>
+                  </a>
+                  <% } %>
+                </li>
+
+                <li class="nav-item">
+                  <a href="/receivedSentSMSDocs" class="nav-link ">
+                  
+                   <i class="nav-icon"> 
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-send-check" viewBox="0 0 16 16">
+                      <path d="M15.964.686a.5.5 0 0 0-.65-.65L.767 5.855a.75.75 0 0 0-.124 1.329l4.995 3.178 1.531 2.406a.5.5 0 0 0 .844-.536L6.637 10.07l7.494-7.494-1.895 4.738a.5.5 0 1 0 .928.372zm-2.54 1.183L5.93 9.363 1.591 6.602z"/>
+                      <path d="M16 12.5a3.5 3.5 0 1 1-7 0 3.5 3.5 0 0 1 7 0m-1.993-1.679a.5.5 0 0 0-.686.172l-1.17 1.95-.547-.547a.5.5 0 0 0-.708.708l.774.773a.75.75 0 0 0 1.174-.144l1.335-2.226a.5.5 0 0 0-.172-.686"/>
+                    </svg>
+                   </i>
+                   <% if (locals.sentSMS) { %>
+                    <p>
+                      Sent SMS
+                    </p> <span class="badge badge-info mx-2"> <%= sentSMS.length %></span>
+                  </a>
+                  <% } %>
+                </li>
+          </ul>
+        </nav>
+        <!-- /.sidebar-menu -->
+      </div>
+      <!-- /.sidebar -->
+    </aside>
+  
+    <!-- Content Wrapper. Contains page content -->
+    <div class="content-wrapper">
+      <!-- Content Header (Page header) -->
+      <div class="content-header">
+        <div class="container-fluid">
+          <div class="row mb-2">
+            <div class="col-sm-6">
+             
+              <h1 class="m-0"> <span class="fas fa-book"></span> Received Documents</h1>
+            </div><!-- /.col -->
+            <div class="col-sm-6">
+              <ol class="breadcrumb float-sm-right">
+                <!-- <li class="breadcrumb-item"><a href="#">Home</a></li>
+                <li class="breadcrumb-item active">Dashboard v1</li> -->
+              </ol>
+            </div><!-- /.col -->
+          </div><!-- /.row -->
+        </div><!-- /.container-fluid -->
+      </div>
+      <!-- /.content-header -->
+
+    <!-- Main content -->
+    <section class="content mt-4">
+      <div class="container-fluid">
+        <div class="row">
+          <div class="col-12">
+           <div class="d-flex justify-content-end">
+           </div>
+           <div class="card">
+            <div class="card-header">
+              <div class="card-title d-flex justify-content-between align-items-center w-100"> 
+                <h5 class="mb-0">Records</h5>
+                <button type="button" class="btn btn-add-doc bg-primary" data-toggle="modal" data-target="#addDocumentModal">
+                  <i class="fas fa-book mx-2"></i>Create Documents
+                </button>
+              </div>
+            </div>
+              <div class="card-body">
+                
+                <table id="table" class="table table-bordered">
+                  <thead> 
+                    <tr>
+                      <th>Requesitioner</th>
+                      <th>Contact No</th>
+                      <th>Description</th>
+                      <th>Folder #</th>
+                      <th>Status</th>
+                      <th>SMS Notification</th>
+                      <th>Date Submitted</th>
+                      <th>Action</th>
+                    </tr>
+                  </thead>
+                  
+                 
+                  <tbody>
+                    <% if(locals.received_docs) { %>
+                      <% received_docs.forEach((received_doc) => { %>
+                      <tr>        
+                                <td><%= received_doc.requestioner %></td>
+                                <td><%= received_doc.contact_no %></td>
+                                <td><%= received_doc.description %></td>
+                                <td><%= received_doc.folder_number %></td>
+                                <td> <span class="text-<%= received_doc.status === 'For Review' ? 'warning' : 'success' %>"> <%= received_doc.status %></span></td>
+                                <td> <span class="badge <%= received_doc.sms_status === 'pending' ? 'badge-danger' : 'badge-success'%>"> <%= received_doc.sms_status %>  </span> </td>
+                                <td><%= new Date(received_doc.date_submitted).toLocaleDateString('en-US', { 
+                                  year: 'numeric', 
+                                  month: 'long', 
+                                  day: 'numeric' 
+                              }) %></td>
+
+                              <td>
+                                <button class="btn btn-secondary btn-sm edit-btn"  data-toggle="modal" data-target="#updateDocumentModal"  data-id="<%= received_doc.id %>">
+                                  <i class="fas fa-cogs"></i>
+                                </button>
+                              </td>
+                     </tr>
+
+                    <% }) %>
+                    <% } %>
+                 
+                  </tbody>
+                </table>
+            
+              </div>
+              <!-- /.card-body -->
+            </div>
+            <!-- /.card -->
+          </div>
+          <!-- /.col -->
+        </div>
+        <!-- /.row -->
+      </div>
+      <!-- /.container-fluid -->
+    </section>
+    <!-- /.content -->
+  </div>
+
+
+
+
+
+<!-- add document modal -->
+<div class="modal fade" id="addDocumentModal" tabindex="-1" aria-labelledby="editModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-sm">
+    <div class="modal-content  ">
+      <div class="modal-header">
+        <h5 class="modal-title" id="editModalLabel">Add Document</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <form id="addDocumentForm" action="/createDocs" method="post">
+          
+          <!-- First Row: Requestioner -->
+          <div class="mb-3">
+            <label for="requestioner" class="form-label">Requesitioner </label>
+            <input type="text" class="form-control" name="requestioner" placeholder="Requestioner" id="requestioner" required>
+          </div>
+
+          <!-- Contact Number Row -->
+          <div class="mb-3">
+            <label for="phone" class="form-label">Contact Number </label>
+            <input type="text" class="form-control" name="contact_no" id="phone" placeholder="e.g., 09123456789" required>
+            <!-- <small class="form-text text-muted">Please enter a valid Philippine mobile number (e.g., 09123456789)</small> -->
+          </div>
+
+          <!-- Description Row -->
+          <div class="mb-3">
+            <label for="description" class="form-label">Description </label>
+            <textarea class="form-control" name="description" id="description" placeholder="Description" rows="3" required></textarea>
+          </div>
+
+
+               <!-- Folder Number -->
+          <div class="mb-3">
+            <label for="phone" class="form-label">Color / Folder Number </label>
+            <input type="text" class="form-control" name="folder_number" id="folder" placeholder="" required>
+            <!-- <small class="form-text text-muted">Please enter a valid Philippine mobile number (e.g., 09123456789)</small> -->
+          </div>
+
+          <!-- Status Row -->
+          <div class="mb-3">
+            <label for="status" class="form-label">Status </label>
+            <select class="form-control" name="status" id="status" required>
+              <option value="For Review">For Review</option>
+              <option value="Ready to Release">Ready to Release</option>
+              <option value="Released">Released</option>
+            </select>
+          </div>
+
+     
+
+          <!-- Date Submitted Row -->
+          <div class="mb-3">
+            <label for="date_submitted" class="form-label">Date Submitted </label>
+            <input type="date" class="form-control" name="date_submitted" id="date_submitted" required>
+          </div>
+
+          <!-- Modal Footer -->
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            <button type="submit" class="btn btn-success">Save Changes</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- update status -->
+<div class="modal fade" id="updateDocumentModal" tabindex="-1" aria-labelledby="editModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content modal-sm ">
+      <div class="modal-header">
+        <h5 class="modal-title" id="editModalLabel">Update Status</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <form id="editDocumentForm" action="/updateStatus" method="post">
+          <input type="hidden" name="id" id="edit_id">
+          <!-- Status Row -->
+          <div class="mb-3">
+            <label for="status" class="form-label">Status </label>
+            <select class="form-control" name="status" id="updateStatus" required>
+              <option value="For Review">For Review</option>
+              <option value="Ready to Release">Ready to Release</option>
+            </select>
+          </div>
+
+          <!-- Modal Footer -->
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            <button type="submit" class="btn btn-success">Save Changes</button>
+          </div>
+          
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+
+
+  <!-- /.content-wrapper -->
+  <footer class="main-footer">
+    <div class="float-right d-none d-sm-block">
+      
+    </div>
+    <strong>Copyright &copy; <span id="footerYear"></span>  .</strong> All rights reserved.
+  </footer>
+
+  <script>
+    const currentDate =  new Date().getFullYear();
+    const footerText = document.querySelector('#footerYear');
+    footerText.textContent = currentDate;
+  </script>
+
+  <!-- Control Sidebar -->
+  <aside class="control-sidebar control-sidebar-dark">
+    <!-- Control sidebar content goes here -->
+  </aside>
+  <!-- /.control-sidebar -->
+</div>
+<!-- ./wrapper -->
+
+
+
+
+<script src="/plugins/jquery/jquery.min.js"></script>
+<script src="/plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
+<script src="/plugins/datatables/jquery.dataTables.min.js"></script>
+<script src="/plugins/datatables-bs4/js/dataTables.bootstrap4.min.js"></script>
+<script src="/plugins/datatables-responsive/js/dataTables.responsive.min.js"></script>
+<script src="/plugins/datatables-responsive/js/responsive.bootstrap4.min.js"></script>
+ <script src="/plugins/datatables-buttons/js/dataTables.buttons.min.js"></script>
+<script src="/plugins/datatables-buttons/js/buttons.bootstrap4.min.js"></script> 
+<script src="/plugins/jszip/jszip.min.js"></script>
+<script src="/plugins/pdfmake/pdfmake.min.js"></script>
+<script src="/plugins/pdfmake/vfs_fonts.js"></script>
+<script src="/plugins/datatables-buttons/js/buttons.html5.min.js"></script>
+<script src="/plugins/datatables-buttons/js/buttons.print.min.js"></script> 
+<script src="/plugins/datatables-buttons/js/buttons.colVis.min.js"></script>
+<script src="/dist/js/adminlte.min.js"></script>
+<script src="/plugins/bs-stepper/js/bs-stepper.min.js"></script>
+<!-- <script src="/plugins/dropzone/min/dropzone.min.js"></script> -->
+<script src="/plugins/moment/moment.min.js"></script>
+<!-- Tempusdominus Bootstrap 4 -->
+<script src="/plugins/tempusdominus-bootstrap-4/js/tempusdominus-bootstrap-4.min.js"></script>
+
+<!-- Toastr -->
+<script src="/plugins/toastr/toastr.min.js"></script>
+
+
+<!-- for datatables search functionality -->
+<script>
+ $(function () {
+  $("#table").DataTable({
+    "responsive": true,
+    "lengthChange": true,
+    "autoWidth": false,
+    "searching": true,
+    "ordering": true,
+    "paging": true,
+    "info": true,
+    "pageLength": 10,
+    "language": {
+      "search": "Search:",
+      "lengthMenu": "Show _MENU_ entries",
+      "info": "Showing _START_ to _END_ of _TOTAL_ entries",
+      "infoEmpty": "Showing 0 to 0 of 0 entries",
+      "infoFiltered": "(filtered from _MAX_ total entries)"
+    },
+      "columnDefs": [
+    { "searchable": true, "targets": [0,1,2,3,4,5,6] },  // Updated from [0,1,2,3,4,5]
+    { "searchable": false, "targets": [7] }               // Updated from [6]
+  ]
+  });
+});
+
+</script>
+
+<!-- for edit modal -->
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+      const editButtons = document.querySelectorAll(".edit-btn");
+
+      editButtons.forEach(button => {
+          button.addEventListener("click", function () {
+              // Get data attributes from the clicked button
+              const id = this.getAttribute("data-id");
+             
+
+              // Populate modal fields with the fetched data
+              document.getElementById("edit_id").value = id;
+            
+          });
+      });
+  });
+</script>
+
+
+
+
+<!-- fetching data from backend to from backend to frontend-->
+<script>
+  // Enhanced table refresh function with better error handling
+function fetchAndUpdateDocuments() {
+  // Store current SMS statuses before fetching new data
+  const currentSmsStatuses = {};
+  
+  if ($.fn.DataTable.isDataTable('#table')) {
+    const table = $('#table').DataTable();
+    table.rows().every(function() {
+      const rowData = this.data();
+      // Find document ID from the action button
+      const actionButton = rowData[6];
+      const idMatch = actionButton.match(/data-id="([^"]+)"/);
+      if (idMatch && idMatch[1]) {
+        const docId = idMatch[1];
+        // Store the SMS status (extract text from the badge)
+        const smsStatusHtml = rowData[4];
+        const tempDiv = document.createElement('div');
+        tempDiv.innerHTML = smsStatusHtml;
+        const smsStatus = tempDiv.textContent.trim();
+        currentSmsStatuses[docId] = smsStatus;
+      }
+    });
+  }
+  
+  axios.get(window.location.pathname)  // Use current path instead of hardcoded '/receivedDocs'
+    .then(function(response) {
+      // Check if we got HTML instead of JSON
+      if (typeof response.data === 'string' && response.data.includes('<!DOCTYPE html>')) {
+        console.log('Received HTML response instead of JSON. Using DOM parsing.');
+        
+        // Create a temporary DOM element to parse the HTML
+        const tempDiv = document.createElement('div');
+        tempDiv.innerHTML = response.data;
+        
+        // Extract table rows from the HTML response
+        const tableRows = tempDiv.querySelectorAll('#table tbody tr');
+        
+        // Process the table data
+        processTableFromHTML(tableRows, currentSmsStatuses);
+        return;
+      }
+      
+      // Process JSON response
+      const data = response.data;
+      
+      // Get a reference to the DataTable
+      const table = $('#table').DataTable();
+      
+      // Store current page and search before clearing
+      const currentPage = table.page();
+      const currentSearch = table.search();
+      
+      // Get current record count to detect if records were removed
+      const previousRowCount = table.data().length;
+      
+      // Clear existing table data
+      table.clear();
+      
+      // Track SMS status changes
+      const smsStatusChanges = [];
+      
+      // Add new data
+      if (data && data.length > 0) {
+        data.forEach(function(doc) {
+          const formattedDate = new Date(doc.date_submitted).toLocaleDateString('en-US', {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric'
+          });
+          
+          const smsStatusBadge = doc.sms_status === 'pending' ? 
+            '<span class="badge badge-danger">pending</span>' : 
+            '<span class="badge badge-success">' + doc.sms_status + '</span>';
+          
+          // Check if SMS status changed from pending to something else
+          if (currentSmsStatuses[doc.id] === 'pending' && doc.sms_status !== 'pending') {
+            smsStatusChanges.push({
+              id: doc.id,
+              requestioner: doc.requestioner,
+              oldStatus: currentSmsStatuses[doc.id],
+              newStatus: doc.sms_status
+            });
+          }
+            
+          const actionButton = '<button class="btn btn-secondary btn-sm edit-btn" data-toggle="modal" ' +
+            'data-target="#updateDocumentModal" data-id="' + doc.id + '">' +
+            '<i class="fas fa-cogs"></i></button>';
+            
+          table.row.add([
+          doc.requestioner,
+          doc.contact_no || '',
+          doc.description,
+          doc.table_location,           
+          doc.status,
+          smsStatusBadge,
+          formattedDate,
+          actionButton
+        ]);
+        });
+      }
+      
+      // Show toaster notifications for SMS status changes
+      if (smsStatusChanges.length > 0) {
+        smsStatusChanges.forEach(change => {
+          toastr.success(`SMS to ${change.requestioner} successfully ${change.newStatus}!`, 'SMS Notification');
+        });
+      }
+      
+      // Check if records were removed (SMS sent)
+      const currentRowCount = data.length;
+      if (previousRowCount > currentRowCount && previousRowCount > 0) {
+        // Records were removed, likely due to SMS being sent
+        const removedCount = previousRowCount - currentRowCount;
+        toastr.success(`${removedCount} notification${removedCount > 1 ? 's' : ''} sent successfully!`, 'SMS Notifications');
+      }
+      
+      // Redraw the table with new data
+      table.draw(false); // false to maintain paging position
+      
+      // Adjust page if needed (in case all records on current page were removed)
+      const pageInfo = table.page.info();
+      if (currentPage > 0 && pageInfo.pages < currentPage + 1) {
+        table.page('last').draw('page');
+      } else {
+        table.page(currentPage).draw('page');
+      }
+      
+      // Restore search
+      if (currentSearch) {
+        table.search(currentSearch).draw();
+      }
+      
+      // Reattach event listeners to edit buttons
+      attachEditButtonListeners();
+    })
+    .catch(function(error) {
+      console.error('Error fetching documents:', error);
+      
+      // More detailed error logging
+      if (error.response) {
+        // The request was made and the server responded with a status code
+        // that falls out of the range of 2xx
+        console.error('Error data:', error.response.data);
+        console.error('Error status:', error.response.status);
+        console.error('Error headers:', error.response.headers);
+      } else if (error.request) {
+        // The request was made but no response was received
+        console.error('Error request:', error.request);
+      } else {
+        // Something happened in setting up the request that triggered an Error
+        console.error('Error message:', error.message);
+      }
+      
+      // Try an alternative approach - refresh the whole page after multiple failures
+      window.refreshAttempts = (window.refreshAttempts || 0) + 1;
+      if (window.refreshAttempts > 3) {
+        console.log('Multiple refresh attempts failed. Reloading page...');
+        window.refreshAttempts = 0;
+        // window.location.reload();
+      } else {
+        
+        // Try again after a delay
+        setTimeout(fetchAndUpdateDocuments, 3000);
+      }
+    });
+}
+
+// Function to process table data from HTML response
+function processTableFromHTML(tableRows, currentSmsStatuses) {
+  // Get a reference to the DataTable
+  const table = $('#table').DataTable();
+  
+  // Store current page and search before clearing
+  const currentPage = table.page();
+  const currentSearch = table.search();
+  
+  // Get current record count
+  const previousRowCount = table.data().length;
+  
+  // Clear existing table data
+  table.clear();
+  
+  // Track SMS status changes
+  const smsStatusChanges = [];
+  
+  // Add new data from HTML rows
+  if (tableRows && tableRows.length > 0) {
+    tableRows.forEach(function(row) {
+      const cells = row.querySelectorAll('td');
+      if (cells.length >= 7) {
+        // Extract document ID from action button
+        const actionButton = cells[6].innerHTML;
+        const idMatch = actionButton.match(/data-id="([^"]+)"/);
+        
+        if (idMatch && idMatch[1]) {
+          const docId = idMatch[1];
+          
+          // Extract SMS status from the badge
+          const smsStatusCell = cells[4];
+          const smsStatusBadge = smsStatusCell.querySelector('.badge');
+          const smsStatus = smsStatusBadge ? smsStatusBadge.textContent.trim() : '';
+          
+          // Check if SMS status changed from pending to something else
+          if (currentSmsStatuses[docId] === 'pending' && smsStatus !== 'pending') {
+            smsStatusChanges.push({
+              id: docId,
+              requestioner: cells[0].textContent.trim(),
+              oldStatus: currentSmsStatuses[docId],
+              newStatus: smsStatus
+            });
+          }
+        }
+        
+          table.row.add([
+          // cells[0].textContent.trim(),          // Column 0
+          // cells[1].textContent.trim(),          // Column 1
+          // cells[2].textContent.trim(),          // Column 2
+          // cells[3].textContent.trim(),          // Column 3
+          // cells[4].textContent.trim(),          // Column 4
+          // cells[5].textContent.trim(),          // Column 5
+          // cells[6].textContent.trim(),          // Column 6
+          // cells[7].textContent.trim(),          // Column 7
+          doc.contact_no || '',       // Column 1
+          doc.description,            // Column 2
+          doc.table_location,                  // Column 3 
+          doc.status,                 // Column 4
+          smsStatusBadge,             // Column 5
+          formattedDate,              // Column 6
+          actionButton                // Column 7
+        ]);
+      }
+    });
+  }
+  
+  // Show toaster notifications for SMS status changes
+  if (smsStatusChanges.length > 0) {
+    smsStatusChanges.forEach(change => {
+      toastr.success(`SMS to ${change.requestioner} successfully ${change.newStatus}!`, 'SMS Notification');
+    });
+  }
+  
+  // Check if records were removed (SMS sent)
+  const currentRowCount = tableRows.length;
+  if (previousRowCount > currentRowCount && previousRowCount > 0) {
+    // Records were removed, likely due to SMS being sent
+    const removedCount = previousRowCount - currentRowCount;
+    toastr.success(`${removedCount} notification${removedCount > 1 ? 's' : ''} sent successfully!`, 'SMS Notifications');
+  }
+  
+  // Redraw the table with new data
+  table.draw(false);
+  
+  // Restore page and search
+  if (currentPage) {
+    table.page(currentPage).draw('page');
+  }
+  if (currentSearch) {
+    table.search(currentSearch).draw();
+  }
+  
+  // Reattach event listeners to edit buttons
+  attachEditButtonListeners();
+}
+
+// Function to attach event listeners to edit buttons
+function attachEditButtonListeners() {
+  const editButtons = document.querySelectorAll(".edit-btn");
+  
+  editButtons.forEach(button => {
+    button.addEventListener("click", function() {
+      const id = this.getAttribute("data-id");
+      document.getElementById("edit_id").value = id;
+    });
+  });
+}
+
+// Initial data fetch when document is ready
+$(document).ready(function() {
+  console.log('Document ready, initializing table refresh');
+  
+  // First load
+  fetchAndUpdateDocuments();
+  
+  // Set up polling interval (every 10 seconds) - increased interval to reduce server load
+  const refreshInterval = setInterval(function() {
+    console.log('Auto-refreshing table data');
+    fetchAndUpdateDocuments();
+  }, 10000);
+  
+  // Clear interval if page is hidden/inactive
+  document.addEventListener('visibilitychange', function() {
+    if (document.hidden) {
+      clearInterval(refreshInterval);
+      console.log('Page hidden, paused auto-refresh');
+    } else {
+      console.log('Page visible, resuming auto-refresh');
+      fetchAndUpdateDocuments(); // Refresh immediately
+      // Restart interval
+      clearInterval(refreshInterval);
+      setInterval(function() {
+        console.log('Auto-refreshing table data');
+        fetchAndUpdateDocuments();
+      }, 10000);
+    }
+  });
+  
+  // Listen for document status changes
+  $('#updateDocumentModal form').on('submit', function(e) {
+    console.log('Form submitted, will refresh table');
+    // Let the form submit normally, then update after a slight delay
+    setTimeout(fetchAndUpdateDocuments, 1000);
+  });
+  
+  // Listen for new document additions
+  $('#addDocumentModal form').on('submit', function(e) {
+    console.log('New document added, will refresh table');
+    // Let the form submit normally, then update after a slight delay
+    setTimeout(fetchAndUpdateDocuments, 1000);
+  });
+});
+</script>
+
+
+
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"> </script>
+
+
+<script src="/preloader.js"></script>
+</body>
+</html>
