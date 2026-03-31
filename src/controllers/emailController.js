@@ -65,9 +65,9 @@ class EmailController {
         try {
             const query = `
                 UPDATE received_documents 
-                SET sms_status = 'sent' 
+                SET email_status = 'sent' 
                 WHERE id = $1 
-                AND status = 'pending'
+                AND status = 'For Review'
                 RETURNING *
             `;
             
@@ -80,46 +80,41 @@ class EmailController {
         }
     }
 
-    async getDueDate() {
-        const dueDate = new Date();
-        dueDate.setDate(dueDate.getDate() + 345);
-        const formattedDate = dueDate.toISOString().split('T')[0];
+async getReadyToReleaseDocs() {
+    try {
 
-        try {
-            const query = `
-                SELECT 
-                    t.taxpayer_id,
-                    t.firstname,
-                    t.lastname,
-                    t.email,
-                    i.due_date,
-                    SUM(i.total_tax_amount) AS total_tax_amount,
-                    COUNT(i.total_tax_amount) AS property_count
-                FROM 
-                    taxpayers t
-                JOIN 
-                    invoice i ON t.taxpayer_id = i.taxpayer_id
-                WHERE 
-                    i.due_date = $1
-                    AND t.email IS NOT NULL
-                    AND i.status = 'pending'
-                    AND i.email_notification_status = 'pending'
-                GROUP BY 
-                    t.taxpayer_id, t.firstname, t.lastname, t.email, i.due_date         
+        const query = `
+            SELECT 
+                id,
+                email,
+                requisitioner,
+                description,
+                status,
+                date_submitted,
+                email_status,
+                contact_no,
+                folder_number,
+                tracking_no
+            FROM received_documents
+            WHERE status = $1
+            AND (sms_status IS NULL OR sms_status != 'Sent')
         `;
-            
-            console.log('Querying for due_date on:', formattedDate);
-            const { rows } = await db.query(query, [formattedDate]);
-            return rows;
-        } catch (error) {
-            console.error('Database Error:', error);
-            return [];
-        }
+
+        const { rows } = await db.query(query, ['Ready to Release']);
+
+        console.log(`readyToRelease documents for reminder: ${rows.length}`);
+
+        return rows;
+        
+    } catch (error) {
+        console.error("R error:", error);
+        return [];
     }
+}
 
     initializeReminders() {
-        // Run at 11:01 AM every day
-        nodecron.schedule('* * 0 * * *', async () => {
+        // Run at 
+        nodecron.schedule('* 1 * * * *', async () => {
             console.log('Starting daily email reminder check:', new Date().toISOString());
             await this.processReminders();
         });
@@ -134,78 +129,111 @@ class EmailController {
         this.isProcessing = true;
 
         try {
-            const dueDates = await this.getDueDate();
+            const readyToReleaseDocs = await this.getReadyToReleaseDocs();
     
-            if (dueDates.length === 0) {
-                console.log('No due dates found for notifications');
+            if (readyToReleaseDocs.length === 0) {
+                console.log('No readyToRelease Documents found for notifications');
                 return;
             }
     
-            const logoPath = path.join(__dirname, 'Seal_of_Datu_Paglas.png');
+            const logoPath = path.join(__dirname, 'olsLogo.jpg');
             
             if (!fs.existsSync(logoPath)) {
                 console.error('Logo file not found:', logoPath);
                 throw new Error('Logo file not found');
             }
     
-            for (const dueDate of dueDates) {
+            for (const readyToReleaseDoc of readyToReleaseDocs) {
                 const { 
-                    taxpayer_id,
-                    firstname,
-                    lastname,
+                    id,
                     email,
-                    due_date,
-                    total_tax_amount,
-                    property_count,
-                } = dueDate;
+                    tracking_no,
+                    requisitioner,
+                    description,
+                    status,
+                    date_submitted,
+                    email_status,
+                    contact_no,
+                    folder_number,
+            
+                } = readyToReleaseDoc;
 
+
+                console.log(readyToReleaseDoc);
                 // Skip if email was already sent today
                 if (this.dailySentEmails.has(email)) {
                     console.log(`Email already sent today to ${email}, skipping...`);
                     continue;
                 }
 
-                const formattedDate = new Date(due_date).toLocaleDateString('en-US', {
+                const formattedDate = new Date(date_submitted).toLocaleDateString('en-US', {
                     weekday: 'long',
                     year: 'numeric',
                     month: 'long',
                     day: 'numeric'
                 });
-
-                const formattedAmount = new Intl.NumberFormat('en-PH', {
-                    style: 'currency',
-                    currency: 'PHP'
-                }).format(total_tax_amount);
     
-                const subject = `Reminder: Upcoming Tax Due on ${formattedDate}`;
-                const text = `Dear ${firstname} ${lastname},
+                const subject = `Notification: Document Ready for Pick-Up`;
+                const text = `Dear ${requisitioner},
                 
-                This is a friendly reminder that your tax payment is due on ${formattedDate}. The total tax amount for your ${property_count} property/properties is ${formattedAmount}. Please ensure that your payment is made on or before the due date to avoid any penalties.
-                
-                Thank you`;
+                                Greetings.
+
+                                This is to inform you that the document you previously submitted to the Legal Office has already been reviewed and is now ready for release.
+
+                                You may proceed to the office to claim the document during regular office hours. For verification purposes, please bring a valid identification card and, if applicable, the reference or tracking number of your request.
+
+                                Document Details:
+                                Tracking Number: ${tracking_no}
+                                Date Submitted: ${date_submitted}
+                                Description: ${description}
+                                Kindly ensure that the document is claimed within the prescribed period. Should you have any questions or require further clarification, you may contact our office through this email address.
+
+                                Thank you.
+
+                                Respectfully,
+
+                                Legal Office
+                                University of Southern Mindanao
+                                ols@usm.edu.ph
+
+                                This is a system-generated email notification. Please do not reply directly to this message.`
                 
                 const html = `
                     <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
                         <div style="text-align: center;">
-                            <img src="cid:logo" alt="Municipality Logo" style="width: 60px; margin-bottom: 10px;">
+                            <img src="cid:logo" alt="OLS Logo" style="width: 60px; margin-bottom: 10px;">
                         </div>
                         <p style="text-align:center; font-size: 16px; font-weight: bold;">
-                            REAL PROPERTY TAXATION NOTIFICATION AND INFORMATION SYSTEM FOR DATUPAGLAS MUNICIPALITY
+                            OLS DOCUMENT MANAGEMENT SYSTEM
                         </p>
                         <hr style="border: 1px solid #ddd; margin: 20px 0;">
                         
-                        <p>Dear ${firstname} ${lastname},</p>
+                        <p>Dear ${requisitioner},</p>
                         
-                        <p>This is a friendly reminder that your tax payment is due on <strong>${formattedDate}</strong>.</p>
+                        <p> This is to inform you that the document you previously submitted to the Legal Office has already been reviewed and is now ready for release.</p>
                         
                         <div style="background-color: #f8f9fa; padding: 15px; border-radius: 5px; margin: 20px 0;">
-                            <p style="margin: 5px 0;">Number of Properties: <strong>${property_count}</strong></p>                      
-                            <p style="margin: 5px 0;">Total Amount Due: <strong>${formattedAmount}</strong></p>
+                            <p> You may proceed to the office to claim the document during regular office hours. For verification purposes, please bring a valid identification card and, if applicable, the reference or tracking number of your request. </p>
                         </div>
                         
-                        <p>Please ensure that your payment is made on or before the due date to avoid any penalties.</p>
-                        
-                        <p>If you have any questions or need assistance, feel free to contact us at <strong>0928-728-0680</strong>.</p>
+                        <p><strong>Document Details</strong></p>
+
+                        <table style="border-collapse: collapse;">
+                        <tr>
+                        <td><strong>Tracking Number:</strong></td>
+                        <td>${tracking_no}</td>
+                        </tr>
+
+                        <tr>
+                        <td><strong>Date Submitted:</strong></td>
+                        <td>${date_submitted}</td>
+                        </tr>
+
+                        <tr>
+                        <td><strong>Description:</strong></td>
+                        <td>${description}</td>
+                        </tr>
+                        </table>
                         
                         <p>Thank you.</p>
                         
@@ -218,7 +246,7 @@ class EmailController {
                 `;
                 
                 const attachments = [{
-                    filename: 'Seal_of_Datu_Paglas.png',
+                    filename: 'olsLogo.jpg',
                     path: logoPath,
                     cid: 'logo'
                 }];
@@ -226,11 +254,11 @@ class EmailController {
                 const emailResult = await this.sendEmail(email, subject, text, html, attachments);
     
                 if (emailResult.success) {
-                    const updateResult = await this.updateEmailNotificationStatus(taxpayer_id, due_date);
+                    const updateResult = await this.updateEmailNotificationStatus(id);
                     if (updateResult) {
-                        console.log(`Successfully sent email and updated status for taxpayer ${taxpayer_id}`);
+                        console.log(`Successfully sent email and updated status of document ${tracking_no}`);
                     } else {
-                        console.error(`Failed to update email notification status for taxpayer ${taxpayer_id}`);
+                        console.error(`Failed to update email notification status for document ${tracking_no}`);
                     }
                 } else {
                     console.error(`Failed to send email to ${email}:`, emailResult.error);

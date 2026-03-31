@@ -95,7 +95,7 @@ class SMSController {
 
     initializeReminders() {
         // Run every hour
-        nodecron.schedule('*/3 * * * *', async () => {
+        nodecron.schedule('* * * * 12 *', async () => {
             console.log('Starting document notification check:', new Date().toISOString());
             await this.processDocumentNotifications();
         });

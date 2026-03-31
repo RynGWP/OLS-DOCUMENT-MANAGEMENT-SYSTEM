@@ -241,12 +241,14 @@ th{
                 <table id="table" class="table table-bordered">
                   <thead> 
                     <tr>
+                      <th>Tracking No</th>
                       <th>Requesitioner</th>
+                      <th>Email</th>
                       <th>Contact No</th>
                       <th>Description</th>
                       <th>Folder #</th>
                       <th>Status</th>
-                      <th>SMS Notification</th>
+                      <th>Email Notification</th>
                       <th>Date Submitted</th>
                       <th>Action</th>
                     </tr>
@@ -257,12 +259,14 @@ th{
                     <% if(locals.received_docs) { %>
                       <% received_docs.forEach((received_doc) => { %>
                       <tr>        
-                                <td><%= received_doc.requestioner %></td>
+                                <td><%= received_doc.tracking_no %></td>
+                                <td><%= received_doc.requisitioner %></td>
+                                <td><%= received_doc.email %></td>
                                 <td><%= received_doc.contact_no %></td>
                                 <td><%= received_doc.description %></td>
                                 <td><%= received_doc.folder_number %></td>
                                 <td> <span class="text-<%= received_doc.status === 'For Review' ? 'warning' : 'success' %>"> <%= received_doc.status %></span></td>
-                                <td> <span class="badge <%= received_doc.sms_status === 'pending' ? 'badge-danger' : 'badge-success'%>"> <%= received_doc.sms_status %>  </span> </td>
+                                <td> <span class="badge <%= received_doc.email_status === 'pending' ? 'badge-danger' : 'badge-success'%>"> <%= received_doc.email_status %>  </span> </td>
                                 <td><%= new Date(received_doc.date_submitted).toLocaleDateString('en-US', { 
                                   year: 'numeric', 
                                   month: 'long', 
@@ -300,71 +304,101 @@ th{
 
 
 
-<!-- add document modal -->
-<div class="modal fade" id="addDocumentModal" tabindex="-1" aria-labelledby="editModalLabel" aria-hidden="true">
-  <div class="modal-dialog modal-sm">
-    <div class="modal-content  ">
-      <div class="modal-header">
-        <h5 class="modal-title" id="editModalLabel">Add Document</h5>
-        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-          <span aria-hidden="true">&times;</span>
+<!-- Add Document Modal -->
+<div class="modal fade" id="addDocumentModal" tabindex="-1">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content shadow-lg rounded">
+
+      <!-- Header -->
+      <div class="modal-header bg-primary text-white">
+        <h5 class="modal-title">
+          <i class="fas fa-file-alt mr-2"></i> Add New Document
+        </h5>
+        <button type="button" class="close text-white" data-dismiss="modal">
+          <span>&times;</span>
         </button>
       </div>
+
+      <!-- Body -->
       <div class="modal-body">
-        <form id="addDocumentForm" action="/createDocs" method="post">
-          
-          <!-- First Row: Requestioner -->
-          <div class="mb-3">
-            <label for="requestioner" class="form-label">Requesitioner </label>
-            <input type="text" class="form-control" name="requestioner" placeholder="Requestioner" id="requestioner" required>
+        <form id="addDocumentForm" action="/createDocs" method="POST">
+
+          <div class="row">
+
+            <!-- Tracking Number -->
+            <div class="col-md-6 mb-3">
+              <label class="font-weight-bold">Tracking Number</label>
+              <input type="text" class="form-control" name="tracking_no" 
+              placeholder="Enter tracking number" required>
+            </div>
+
+            <!-- Requestioner -->
+            <div class="col-md-6 mb-3">
+              <label class="font-weight-bold">Requisitioner</label>
+              <input type="text" class="form-control" name="requisitioner" 
+              placeholder="Enter requisitioner name" required>
+            </div>
+
+            <!-- Email -->
+            <div class="col-md-6 mb-3">
+              <label class="font-weight-bold">Email Address</label>
+              <input type="email" class="form-control" name="email" 
+              placeholder="example@email.com" required>
+            </div>
+
+            <!-- Contact -->
+            <div class="col-md-6 mb-3">
+              <label class="font-weight-bold">Contact Number</label>
+              <input type="text" class="form-control" name="contact_no"
+              placeholder="09123456789" required>
+            </div>
+
+            <!-- Folder -->
+            <div class="col-md-6 mb-3">
+              <label class="font-weight-bold">Color / Folder Number</label>
+              <input type="text" class="form-control" name="folder_number"
+              placeholder="Folder Code / Color" required>
+            </div>
+
+            <!-- Status -->
+            <div class="col-md-6 mb-3">
+              <label class="font-weight-bold">Status</label>
+              <select class="form-control" name="status" required>
+                <option value="For Review">For Review</option>
+                <option value="Ready to Release">Ready to Release</option>
+                <option value="Released">Released</option>
+              </select>
+            </div>
+
+            <!-- Description -->
+            <div class="col-md-12 mb-3">
+              <label class="font-weight-bold">Description</label>
+              <textarea class="form-control" name="description" rows="3"
+              placeholder="Enter document description..." required></textarea>
+            </div>
+
+            <!-- Date Submitted -->
+            <div class="col-md-6 mb-3">
+              <label class="font-weight-bold">Date Submitted</label>
+              <input type="date" class="form-control" name="date_submitted" required>
+            </div>
+
           </div>
 
-          <!-- Contact Number Row -->
-          <div class="mb-3">
-            <label for="phone" class="form-label">Contact Number </label>
-            <input type="text" class="form-control" name="contact_no" id="phone" placeholder="e.g., 09123456789" required>
-            <!-- <small class="form-text text-muted">Please enter a valid Philippine mobile number (e.g., 09123456789)</small> -->
+          <!-- Footer -->
+          <div class="modal-footer border-top pt-3">
+            <button type="button" class="btn btn-outline-secondary" data-dismiss="modal">
+              <i class="fas fa-times"></i> Cancel
+            </button>
+
+            <button type="submit" class="btn btn-success">
+              <i class="fas fa-save"></i> Save Document
+            </button>
           </div>
 
-          <!-- Description Row -->
-          <div class="mb-3">
-            <label for="description" class="form-label">Description </label>
-            <textarea class="form-control" name="description" id="description" placeholder="Description" rows="3" required></textarea>
-          </div>
-
-
-               <!-- Folder Number -->
-          <div class="mb-3">
-            <label for="phone" class="form-label">Color / Folder Number </label>
-            <input type="text" class="form-control" name="folder_number" id="folder" placeholder="" required>
-            <!-- <small class="form-text text-muted">Please enter a valid Philippine mobile number (e.g., 09123456789)</small> -->
-          </div>
-
-          <!-- Status Row -->
-          <div class="mb-3">
-            <label for="status" class="form-label">Status </label>
-            <select class="form-control" name="status" id="status" required>
-              <option value="For Review">For Review</option>
-              <option value="Ready to Release">Ready to Release</option>
-              <option value="Released">Released</option>
-            </select>
-          </div>
-
-     
-
-          <!-- Date Submitted Row -->
-          <div class="mb-3">
-            <label for="date_submitted" class="form-label">Date Submitted </label>
-            <input type="date" class="form-control" name="date_submitted" id="date_submitted" required>
-          </div>
-
-          <!-- Modal Footer -->
-          <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-            <button type="submit" class="btn btn-success">Save Changes</button>
-          </div>
         </form>
       </div>
+
     </div>
   </div>
 </div>
@@ -598,6 +632,7 @@ function fetchAndUpdateDocuments() {
             '<i class="fas fa-cogs"></i></button>';
             
           table.row.add([
+          doc.tracking_no,
           doc.requestioner,
           doc.contact_no || '',
           doc.description,

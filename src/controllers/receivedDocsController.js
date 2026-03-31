@@ -20,7 +20,7 @@ async function createDocs (req,res) {
 
 async function readDocs (req,res) {
     try {
-        const received_docs = await receivedDocs_CRUD.readAll({sms_status:'pending'});
+        const received_docs = await receivedDocs_CRUD.readAll({email_status:'pending'});
         const user = req.user;
 
 
@@ -46,11 +46,11 @@ async function readDocs (req,res) {
 
 async function readSentSMSDocs (req,res) {
     try {
-        const received_docs = await receivedDocs_CRUD.readAll({sms_status:'sent'});
+        const received_docs = await receivedDocs_CRUD.readAll({email_status:'sent'});
         const user = req.user;
 
         const sentSMS = await receivedDocs_CRUD.readAll({ 
-            sms_status: 'sent', 
+            email_status: 'sent', 
             date_submitted: new Date().toISOString().split('T')[0] // Format YYYY-MM-DD
         });
 
@@ -73,12 +73,14 @@ async function updateStatus (req,res) {
         const {
             id,
             status,
-            folder_number
+            folder_number,
+            tracking_no,
+            email
         } = req.body;
 
 
         await receivedDocs_CRUD.update( id , {
-            status, folder_number
+            status, folder_number,tracking_no,email
         })
 
         const user = req.user;
